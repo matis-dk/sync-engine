@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { faker } from "@faker-js/faker";
-
+import dayjs from "dayjs";
 // Initialize Supabase client
 const supabaseUrl = "https://bacqiesjoqdkxvluwdel.supabase.co";
 const supabaseKey =
@@ -12,12 +12,31 @@ const generateEmployees = (num: number) => {
   const employees: Array<any> = [];
 
   for (let i = 0; i < num; i++) {
+    const r = Math.random();
+    const isUpdated = r > 0.3 && r < 0.6;
+    const isDeleted = r > 0.9;
+    const created_at = faker.date
+      .past({ years: 1 })
+      .toISOString()
+      .split("T")[0];
+
     const employee = {
       first_name: faker.person.firstName(),
       last_name: faker.person.lastName(),
       email: faker.internet.email(),
       phone_number: faker.phone.number(),
       hire_date: faker.date.past({ years: 10 }).toISOString().split("T")[0],
+      created_at: created_at,
+      updated_at: isUpdated
+        ? dayjs(created_at)
+            .add(Math.round(Math.random() * 10), "days")
+            .toISOString()
+        : null,
+      deleted_at: isDeleted
+        ? dayjs(created_at)
+            .add(Math.round(Math.random() * 10), "days")
+            .toISOString()
+        : null,
     };
     employees.push(employee);
   }
