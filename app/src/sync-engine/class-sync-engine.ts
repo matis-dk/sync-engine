@@ -18,6 +18,21 @@ class SyncEngine {
   }
   sync_to_now() {
     console.log("sync_to_now: ", Date.now());
+    //       const querySyncedAt = c.req.query("synced_at");
+    //   const from = Number(c.req.query("offset")) || 0;
+    //   const to = from + 10;
+
+    //   const res = await supabase
+    //     .from("employees")
+    //     .select("*", { count: "exact" })
+    //     .or(
+    //       [
+    //         `created_at.gte.${querySyncedAt}`,
+    //         `deleted_at.gte.${querySyncedAt}`,
+    //         `updated_at.gte.${querySyncedAt}`,
+    //       ].join(",")
+    //     )
+    //     .range(from, to);
   }
   listener_start() {
     console.log("listener_start: ", Date.now());
