@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { createFileRoute, useRouteContext } from "@tanstack/react-router";
-import axios from "axios";
-import IndexedDBService from "../db/class-idb";
+import IndexedDBService from "../services/db/service-indexed-db";
 
 const btn =
   "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full";

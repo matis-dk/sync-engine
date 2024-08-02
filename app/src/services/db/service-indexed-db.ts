@@ -1,5 +1,5 @@
 import { DBSchema, openDB, IDBPDatabase } from "idb";
-import { LogTimeWithPayload } from "../log/logger";
+import { LogTimeWithPayload } from "../log/log-service";
 
 export type Record<T = object> = T & {
   id: string;
