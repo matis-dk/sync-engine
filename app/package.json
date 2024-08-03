@@ -6,7 +6,8 @@
     "dev": "vite --port=3001",
     "build": "vite build",
     "serve": "vite preview",
-    "start": "vite"
+    "start": "vite",
+    "compile": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

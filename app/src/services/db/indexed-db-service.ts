@@ -117,4 +117,6 @@ class IndexedDBService {
   }
 }
 
-export default IndexedDBService;
+export const dbService = new IndexedDBService("db", "employees");
+
+dbService.openDB();
