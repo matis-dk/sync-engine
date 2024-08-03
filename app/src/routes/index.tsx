@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { createFileRoute, useRouteContext } from "@tanstack/react-router";
-import IndexedDBService from "../services/db/service-indexed-db";
+import IndexedDBService from "../services/db/indexed-db-service";
+import { SyncEngine } from "../services/sync-engine/sync-engine-service";
+import { useStore } from "../services/store/store-service";
 
 const btn =
   "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full";
@@ -10,24 +12,54 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeComponent() {
-  const refIdb = useRef<IndexedDBService | null>(null);
+  const refSyncEngineService = useRef<SyncEngine>(new SyncEngine());
+  const refDbService = useRef<IndexedDBService | null>(null);
+
+  const store = useStore();
 
   useEffect(() => {
     const instance = new IndexedDBService("db", "employees");
     instance.openDB().then((res) => {
-      refIdb.current = instance;
+      refDbService.current = instance;
     });
   }, []);
 
   return (
     <div className="p-2 flex flex-col justify-start items-start gap-3">
-      <h5>IDB</h5>
+      <h5>Zustand</h5>
+      <p>employees: {Object.keys(store.employees).length}</p>
       <button
         className={btn}
         onClick={() => {
-          refIdb.current!.getAllRecords().then((res) => {
-            console.log("res ====> ", res);
-          });
+          console.log(
+            "Object.keys(store.employees).length() ====> ",
+            Object.keys(store.employees).length
+          );
+        }}
+      >
+        employees length
+      </button>
+      <button
+        className={btn}
+        onClick={() => {
+          store.setEmployees([createRecord("1"), createRecord("2")]);
+        }}
+      >
+        setEmployees
+      </button>
+      <button
+        className={btn}
+        onClick={() => {
+          store.clearEmployees();
+        }}
+      >
+        clearEmployees
+      </button>
+      <h5>IndexedDB</h5>
+      <button
+        className={btn}
+        onClick={() => {
+          printPromise(refDbService.current!.getAllRecords());
         }}
       >
         getAllRecords
@@ -35,18 +67,89 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          refIdb.current!.addRecord({
-            id: `id-${Date.now()}`,
-            created_at: "",
-            deleted_at: null,
-            updated_at: null,
-          });
+          printPromise(refDbService.current!.clearAllRecords());
+        }}
+      >
+        clearAllRecords
+      </button>
+      <button
+        className={btn}
+        onClick={() => {
+          refDbService.current!.addRecord(createRecord(`id-${Date.now()}`));
         }}
       >
         addRecord
       </button>
-
+      <button
+        className={btn}
+        onClick={() => {
+          refDbService.current!.bulkUpsertRecords([
+            createRecord("id-1"),
+            createRecord("id-2"),
+          ]);
+        }}
+      >
+        bulkUpsertRecords
+      </button>
       <hr />
+      <h5>SyncEngine</h5>
+      <button
+        className={btn}
+        onClick={() => {
+          printPromise(refSyncEngineService.current.sync_status());
+        }}
+      >
+        sync_status
+      </button>
+      <button
+        className={btn}
+        onClick={() => {
+          printPromise(refSyncEngineService.current.sync_to_now());
+        }}
+      >
+        sync_to_now
+      </button>
+      <button
+        className={btn}
+        onClick={() => {
+          refSyncEngineService.current.listener_start();
+        }}
+      >
+        listener_start
+      </button>
+      <button
+        className={btn}
+        onClick={() => {
+          refSyncEngineService.current.listener_stop();
+        }}
+      >
+        listener_stop
+      </button>
+      <button
+        className={btn}
+        onClick={() => {
+          refSyncEngineService.current.listener_status();
+        }}
+      >
+        listener_status
+      </button>
     </div>
   );
 }
+
+const createRecord = (id?: string) => ({
+  id: `id-${id}`,
+  created_at: "",
+  deleted_at: null,
+  updated_at: null,
+});
+
+const printPromise = <T,>(p: Promise<T>) => {
+  return p
+    .then((res) => {
+      console.log("res ====> ", res);
+    })
+    .catch((err) => {
+      console.log("err ====> ", err);
+    });
+};

@@ -3,15 +3,22 @@ export function LogTimeWithPayload(
   propertyKey: string,
   descriptor: PropertyDescriptor
 ) {
-  const originalMethod = descriptor.value;
-  const logger = console;
+  if (typeof target === "function") {
+    console.log(`${target.name}`);
+    return;
+  }
+
+  const constructor = target.constructor.name;
+  const originalMethod = descriptor?.value || "unknown method";
+
+  if (!descriptor) return;
   descriptor.value = async function (...args: any[]) {
     const t1 = new Date();
     const result = await originalMethod.apply(this, args);
     const t2 = new Date();
     const time = `${t2.getTime() - t1.getTime()}ms`;
 
-    console.log("IndexedDBService:", propertyKey + " in " + time);
+    console.log(`${constructor}: ${propertyKey} in ${time}`);
 
     return result;
   };

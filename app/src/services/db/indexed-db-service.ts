@@ -1,7 +1,7 @@
 import { DBSchema, openDB, IDBPDatabase } from "idb";
 import { LogTimeWithPayload } from "../log/log-service";
 
-export type Record<T = object> = T & {
+export type SyncRecord<T = object> = T & {
   id: string;
   created_at: string; // ISO string for creation timestamp
   updated_at: string | null; // ISO string for update timestamp
@@ -11,7 +11,7 @@ export type Record<T = object> = T & {
 type MyDbSchema = {
   employees: {
     key: string;
-    value: Record;
+    value: SyncRecord;
   };
 };
 type MyDB = DBSchema & MyDbSchema;
@@ -40,7 +40,7 @@ class IndexedDBService {
   }
 
   @LogTimeWithPayload
-  async addRecord(record: Record): Promise<void> {
+  async addRecord(record: SyncRecord): Promise<void> {
     if (!this.db) {
       throw new Error("Database not initialized");
     }
@@ -48,11 +48,24 @@ class IndexedDBService {
   }
 
   @LogTimeWithPayload
-  async updateRecord(record: Record): Promise<void> {
+  async upsertRecord(record: SyncRecord): Promise<void> {
     if (!this.db) {
       throw new Error("Database not initialized");
     }
     await this.db.put(this.storeName, record);
+  }
+
+  @LogTimeWithPayload
+  async bulkUpsertRecords(records: SyncRecord[]): Promise<void> {
+    if (!this.db) {
+      throw new Error("Database not initialized");
+    }
+    const transaction = this.db.transaction(this.storeName, "readwrite");
+    const store = transaction.objectStore(this.storeName);
+    for (const record of records) {
+      store.put(record);
+    }
+    await transaction.done;
   }
 
   @LogTimeWithPayload
@@ -64,18 +77,43 @@ class IndexedDBService {
   }
 
   @LogTimeWithPayload
-  async getRecord(id: string): Promise<Record | undefined> {
+  async bulkDeleteRecords(ids: string[]): Promise<void> {
+    if (!this.db) {
+      throw new Error("Database not initialized");
+    }
+    const transaction = this.db.transaction(this.storeName, "readwrite");
+    const store = transaction.objectStore(this.storeName);
+    for (const id of ids) {
+      store.delete(id);
+    }
+    await transaction.done;
+  }
+
+  @LogTimeWithPayload
+  async getRecord(id: string): Promise<SyncRecord | undefined> {
     if (!this.db) {
       throw new Error("Database not initialized");
     }
     return await this.db.get(this.storeName, id);
   }
+
   @LogTimeWithPayload
-  async getAllRecords(): Promise<Record[]> {
+  async getAllRecords(): Promise<SyncRecord[]> {
     if (!this.db) {
       throw new Error("Database not initialized");
     }
     return await this.db.getAll(this.storeName);
+  }
+
+  @LogTimeWithPayload
+  async clearAllRecords(): Promise<void> {
+    if (!this.db) {
+      throw new Error("Database not initialized");
+    }
+    const transaction = this.db.transaction(this.storeName, "readwrite");
+    const store = transaction.objectStore(this.storeName);
+    await store.clear();
+    await transaction.done;
   }
 }
 
