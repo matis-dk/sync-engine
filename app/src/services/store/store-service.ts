@@ -3,10 +3,19 @@ import { devtools } from "zustand/middleware";
 
 import { SyncRecord } from "../db/indexed-db-service";
 
+type EmployeesRecord = SyncRecord & {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
 type Store = {
   isBooted: boolean;
   setBooted: (isBooted: boolean) => void;
-  employees: Record<string, SyncRecord>;
+  employees: Record<string, EmployeesRecord>;
   setEmployees: (records: Array<SyncRecord>) => void;
   getStatus: () => { count: number; latestSyncedAt: string | null };
   clearEmployees: () => void;
@@ -38,8 +47,8 @@ export const useStore = create<Store>()(
         (state) => ({
           employees: {
             ...state.employees,
-            ...records.reduce<Record<string, SyncRecord>>((acc, i) => {
-              acc[i.id] = i;
+            ...records.reduce<Record<string, EmployeesRecord>>((acc, i) => {
+              acc[i.id] = i as EmployeesRecord;
               return acc;
             }, {}),
           },
