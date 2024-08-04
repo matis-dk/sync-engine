@@ -67,7 +67,6 @@ class ApiService {
 
       if (res.count! <= to) {
         console.info("get_employees_since_at: last items is fetched");
-        console.log("res ====> ", res.data);
         return;
       }
     }
