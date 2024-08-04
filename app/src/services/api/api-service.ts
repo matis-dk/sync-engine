@@ -24,7 +24,7 @@ type IsoString = string;
 
 class ApiService {
   constructor() {
-    console.log("ApiService: creating instance");
+    console.log("🛫 ApiService: creating instance");
   }
 
   @LogTimeWithPayload

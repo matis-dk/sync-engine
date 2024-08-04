@@ -1,5 +1,7 @@
 import * as React from "react";
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
+import { useSync } from "../hooks/useSync";
+import { useBoot } from "../hooks/useBoot";
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
@@ -18,6 +20,9 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+  const isBooted = useBoot();
+  const isSyncing = useSync();
+
   return (
     <>
       <div className="p-2 flex gap-2 text-lg">

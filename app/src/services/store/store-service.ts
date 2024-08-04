@@ -4,6 +4,8 @@ import { devtools } from "zustand/middleware";
 import { SyncRecord } from "../db/indexed-db-service";
 
 type Store = {
+  isBooted: boolean;
+  setBooted: (isBooted: boolean) => void;
   employees: Record<string, SyncRecord>;
   setEmployees: (records: Array<SyncRecord>) => void;
   getStatus: () => { count: number; latestSyncedAt: string | null };
@@ -12,6 +14,8 @@ type Store = {
 
 export const useStore = create<Store>()(
   devtools((set, get) => ({
+    isBooted: false,
+    setBooted: (isBooted) => set((state) => ({ isBooted }), false, "setBooted"),
     employees: {},
     clearEmployees: () =>
       set((state) => ({ employees: {} }), false, "clearEmployees"),

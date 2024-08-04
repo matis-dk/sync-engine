@@ -3,6 +3,8 @@ import { createFileRoute, useRouteContext } from "@tanstack/react-router";
 import { useStore } from "../services/store/store-service";
 import { syncEngineService } from "../services/sync-engine/sync-engine-service";
 import { dbService } from "../services/db/indexed-db-service";
+import useOnlineStatus from "../hooks/useOnlineStatus";
+import usePageVisibility from "../hooks/usePageVisibility";
 
 const btn =
   "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full";
@@ -12,9 +14,6 @@ export const Route = createFileRoute("/")({
 });
 
 function HomeComponent() {
-  const refSyncEngineService = useRef(syncEngineService);
-  const refDbService = useRef(dbService);
-
   const store = useStore();
 
   return (
@@ -52,7 +51,7 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          printPromise(refDbService.current!.getAllRecords());
+          printPromise(dbService.getAllRecords());
         }}
       >
         getAllRecords
@@ -60,7 +59,7 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          printPromise(refDbService.current!.clearAllRecords());
+          printPromise(dbService.clearAllRecords());
         }}
       >
         clearAllRecords
@@ -68,7 +67,7 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          refDbService.current!.addRecord(createRecord(`id-${Date.now()}`));
+          dbService.addRecord(createRecord(`id-${Date.now()}`));
         }}
       >
         addRecord
@@ -76,7 +75,7 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          refDbService.current!.bulkUpsertRecords([
+          dbService.bulkUpsertRecords([
             createRecord("id-1"),
             createRecord("id-2"),
           ]);
@@ -89,7 +88,7 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          printPromise(refSyncEngineService.current.sync_status());
+          printPromise(syncEngineService.sync_status());
         }}
       >
         sync_status
@@ -97,7 +96,7 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          printPromise(refSyncEngineService.current.sync_to_now());
+          printPromise(syncEngineService.sync_to_now());
         }}
       >
         sync_to_now
@@ -105,7 +104,7 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          refSyncEngineService.current.listener_start();
+          syncEngineService.listener_start();
         }}
       >
         listener_start
@@ -113,18 +112,10 @@ function HomeComponent() {
       <button
         className={btn}
         onClick={() => {
-          refSyncEngineService.current.listener_stop();
+          syncEngineService.listener_stop();
         }}
       >
         listener_stop
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          refSyncEngineService.current.listener_status();
-        }}
-      >
-        listener_status
       </button>
     </div>
   );

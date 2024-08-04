@@ -13,7 +13,9 @@ class SyncEngine {
   private store = useStore.getState();
   private subscription = null as RealtimeChannel | null;
 
-  constructor() {}
+  constructor() {
+    console.log("🔃 SyncEngine: creating instance");
+  }
 
   @LogTimeWithPayload
   async sync_status() {
@@ -31,10 +33,19 @@ class SyncEngine {
   @LogTimeWithPayload
   async sync_to_now() {
     const status = await this.sync_status();
+
+    if (status.api.count === 0) {
+      console.info("sync_to_now: api doesn't have any records");
+      return;
+    }
+
+    if (status.api.latestSyncedAt === status.store.latestSyncedAt) {
+      console.info("sync_to_now: sync is up-to-date");
+      return;
+    }
+
     const syncedAt =
       status.store.latestSyncedAt || new Date("1970").toISOString();
-
-    console.log("syncedAt ====> ", syncedAt);
 
     for await (const result of apiService.get_employees_since_at(syncedAt)) {
       this.save_records(result.data);
@@ -52,7 +63,7 @@ class SyncEngine {
           schema: "public",
         },
         (payload) => {
-          console.log(payload);
+          console.log("listener_start: ", payload);
           this.save_records([payload.new as SyncRecord]);
         }
       )
@@ -64,9 +75,6 @@ class SyncEngine {
     this.subscription?.unsubscribe();
     this.subscription = null;
   }
-
-  @LogTimeWithPayload
-  listener_status() {}
 
   @LogTimeWithPayload
   private async save_records(records: Array<SyncRecord>) {

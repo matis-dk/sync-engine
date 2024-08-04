@@ -22,7 +22,7 @@ class IndexedDBService {
   private db: IDBPDatabase<MyDB> | null = null;
 
   constructor(dbName: string, storeName: keyof MyDbSchema) {
-    console.log("IndexedDBService: creating instance");
+    console.log("💾 IndexedDBService: creating instance");
     this.dbName = dbName;
     this.storeName = storeName;
   }
@@ -118,5 +118,3 @@ class IndexedDBService {
 }
 
 export const dbService = new IndexedDBService("db", "employees");
-
-dbService.openDB();
