@@ -67,7 +67,9 @@ class SyncEngine {
           this.save_records([payload.new as SyncRecord]);
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(" ====> ", { status, err });
+      });
   }
 
   @LogTimeWithPayload
