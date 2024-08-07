@@ -3,7 +3,7 @@ import { devtools } from "zustand/middleware";
 
 import { SyncRecord } from "../db/indexed-db-service";
 
-type EmployeesRecord = SyncRecord & {
+export type EmployeesRecord = SyncRecord & {
   first_name: string;
   last_name: string;
   email: string;

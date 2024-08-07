@@ -17,14 +17,21 @@ import {
   PaginationNext,
 } from "@/components/ui/pagination";
 import { useStore } from "@/services/store/store-service";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/employees-list")({
   component: EmployeesList,
 });
 
 function EmployeesList() {
+  const router = useRouter();
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex flex-col justify-center items-center">
+      <div className="flex max-w-[1200px] w-full justify-end ">
+        <Button onClick={() => router.navigate({ to: "/employee-detail" })}>
+          Add employee
+        </Button>
+      </div>
       <EmployeesTable />
     </div>
   );
