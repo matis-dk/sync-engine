@@ -1,4 +1,4 @@
-import { LogTimeWithPayload } from "../log/log-service";
+import { log, LogTimeWithPayload } from "../log/log-service";
 import { dbService, SyncRecord } from "../db/indexed-db-service";
 import { useStore } from "../store/store-service";
 import { RealtimeChannel } from "@supabase/supabase-js";
@@ -10,11 +10,13 @@ export type Status = {
 };
 
 class SyncEngine {
+  private logger = log.common.getSubLogger({ name: "[SyncEngine]" });
+
   private store = useStore.getState();
   private subscription = null as RealtimeChannel | null;
 
   constructor() {
-    console.log("🔃 SyncEngine: creating instance");
+    this.logger.info("creating instance");
   }
 
   @LogTimeWithPayload
@@ -35,12 +37,12 @@ class SyncEngine {
     const status = await this.sync_status();
 
     if (status.api.count === 0) {
-      console.info("sync_to_now: api doesn't have any records");
+      this.logger.info("sync_to_now: api doesn't have any records");
       return;
     }
 
     if (status.api.latestSyncedAt === status.store.latestSyncedAt) {
-      console.info("sync_to_now: sync is up-to-date");
+      this.logger.info("sync_to_now: sync is up-to-date");
       return;
     }
 
@@ -68,7 +70,7 @@ class SyncEngine {
         schema: "public",
       },
       (payload) => {
-        console.log("listener_start: ", payload);
+        this.logger.info("listener_start: ", payload);
         this.save_records([payload.new as SyncRecord]);
       }
     );

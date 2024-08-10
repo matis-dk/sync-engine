@@ -1,5 +1,5 @@
 import { DBSchema, openDB, IDBPDatabase } from "idb";
-import { LogTimeWithPayload } from "../log/log-service";
+import { log, LogTimeWithPayload } from "../log/log-service";
 
 const VERSION = 5;
 
@@ -25,9 +25,10 @@ class IndexedDBService {
   private dbName: string;
   private storeName: keyof MyDbSchema;
   private db: IDBPDatabase<MyDB> | null = null;
+  private logger = log.common.getSubLogger({ name: "[IndexedDBService]" });
 
   constructor(dbName: string, storeName: keyof MyDbSchema) {
-    console.log("💾 IndexedDBService: creating instance");
+    this.logger.info("creating instance");
     this.dbName = dbName;
     this.storeName = storeName;
   }

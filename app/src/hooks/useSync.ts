@@ -4,6 +4,7 @@ import useOnlineStatus from "./useOnlineStatus";
 import usePageVisibility from "./usePageVisibility";
 import { syncEngineService } from "../services/sync-engine/sync-engine-service";
 import { stat } from "fs";
+import { log } from "@/services/log/log-service";
 
 export function useSync() {
   const store = useStore();
@@ -16,19 +17,19 @@ export function useSync() {
 
   useEffect(() => {
     if (!isBooted) {
-      console.info("useSync: application is booted yet");
+      log.useSync.info("application is booted yet");
       return;
     }
 
     if (!isOnline) {
-      console.info("useSync: user isn't online");
+      log.useSync.info("user isn't online");
       syncEngineService.listener_stop();
       setSynced(false);
       return;
     }
 
     if (!isPageVisibile) {
-      console.info("useSync: user tab isn't in focus");
+      log.useSync.info("user tab isn't in focus");
       syncEngineService.listener_stop();
       setSynced(false);
       return;

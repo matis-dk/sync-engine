@@ -30,7 +30,7 @@ function EmployeesList() {
       <div className="flex max-w-[1200px] w-full justify-end border p-2 ">
         <Button
           variant="outline"
-          onClick={() => router.navigate({ to: "/employee-detail" })}
+          onClick={() => router.navigate({ to: "/employees-detail" })}
         >
           Add employee
         </Button>
@@ -147,7 +147,7 @@ function EmployeesTable() {
               className="hover:bg-slate-100 cursor-pointer"
               onClick={() => {
                 router.navigate({
-                  to: "/employee-detail",
+                  to: "/employees-detail",
                   search: { id: item.id },
                 });
               }}
@@ -169,7 +169,6 @@ function EmployeesTable() {
             <PaginationPrevious
               href="#"
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
             />
           </PaginationItem>
           <PaginationItem>
@@ -185,7 +184,6 @@ function EmployeesTable() {
             <PaginationNext
               href="#"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
             />
           </PaginationItem>
         </PaginationContent>

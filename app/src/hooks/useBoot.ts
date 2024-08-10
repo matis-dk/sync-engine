@@ -5,6 +5,7 @@ import {
   dbService,
 } from "../services/db/indexed-db-service";
 import { resultError, resultSuccess } from "../helpers/result";
+import { log } from "@/services/log/log-service";
 
 export function useBoot() {
   const { isBooted, setBooted, setEmployees, setMutations } = useStore();
@@ -13,7 +14,7 @@ export function useBoot() {
   }, []);
 
   async function handleBoot() {
-    console.info("useBoot: booting start");
+    log.useBoot.info("booting start");
 
     const dbResult = await dbService
       .openDB()
@@ -26,29 +27,28 @@ export function useBoot() {
       .catch(resultError);
 
     if (!dbResult.success || !dbMutationResult.success) {
-      console.info(
-        "useBoot: booting failed because it was unable to open db service"
+      log.useBoot.error(
+        "booting failed because it was unable to open db service",
+        {
+          dbResult,
+          dbMutationResult,
+        }
       );
-      console.error({
-        dbResult,
-        dbMutationResult,
-      });
+
       return;
     }
 
     const records = await dbService.getAllRecords();
 
-    console.info(`useBoot: hydrating zustand with ${records.length} records`);
+    log.useBoot.info(`hydrating zustand with ${records.length} records`);
     setEmployees(records);
 
     const mutations = await dbMutationService.getAllRecords();
 
-    console.info(
-      `useBoot: hydrating zustand with ${mutations.length} mutations`
-    );
+    log.useBoot.info(`hydrating zustand with ${mutations.length} mutations`);
     setMutations(mutations as Array<Mutation>);
 
-    console.info("useBoot: booting done");
+    log.useBoot.info("booting done");
     setBooted(true);
   }
 

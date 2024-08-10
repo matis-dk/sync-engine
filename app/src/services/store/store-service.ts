@@ -3,6 +3,7 @@ import { devtools } from "zustand/middleware";
 import computed from "zustand-computed";
 
 import { SyncRecord } from "../db/indexed-db-service";
+import { log } from "../log/log-service";
 
 type IsoString = string;
 type Json = string;
@@ -99,7 +100,7 @@ export const useStore = create<Store>()(
 
 function applyMutations(employees: EmployeesMap, mutations: Array<Mutation>) {
   if (!mutations) {
-    console.log("👹 Mutation: no mutation so exiting");
+    log.mutation.error(`missing mutations`);
     return employees;
   }
   mutations
@@ -108,22 +109,21 @@ function applyMutations(employees: EmployeesMap, mutations: Array<Mutation>) {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
     .forEach((mutation) => {
-      console.log("👹 Mutation: ", mutation);
       const mutationId = mutation.payload.id;
 
       if (!mutationId) {
-        console.log("👹 Mutation: missing id ====> ", mutation);
+        log.mutation.info(`missing payload id: ${mutation.id}`);
         return;
       }
 
       if (employees[mutationId]) {
-        console.log("👹 Mutation: updated id ====> ", mutationId);
+        log.mutation.info(`missing  updating employee: ${mutationId}`);
         employees[mutationId] = {
           ...employees[mutationId],
           ...mutation.payload,
         };
       } else {
-        console.log("👹 Mutation: added id ====> ", mutation.payload.id);
+        log.mutation.info(`missing  adding employee: ${mutationId}`);
         employees[mutationId] = mutation.payload as any;
       }
     });
