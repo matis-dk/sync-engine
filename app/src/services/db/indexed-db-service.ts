@@ -1,11 +1,10 @@
 import { DBSchema, openDB, IDBPDatabase } from "idb";
 import { LogTimeWithPayload } from "../log/log-service";
 
+const VERSION = 5;
+
 export type SyncRecord<T = object> = T & {
   id: string;
-  created_at: string; // ISO string for creation timestamp
-  updated_at: string | null; // ISO string for update timestamp
-  deleted_at: string | null; // ISO string for deletion timestamp (optional)
 };
 
 type MyDbSchema = {
@@ -13,8 +12,14 @@ type MyDbSchema = {
     key: string;
     value: SyncRecord;
   };
+  mutations: {
+    key: string;
+    value: SyncRecord;
+  };
 };
 type MyDB = DBSchema & MyDbSchema;
+
+const stores = ["employees", "mutations"] as const;
 
 class IndexedDBService {
   private dbName: string;
@@ -29,12 +34,13 @@ class IndexedDBService {
 
   @LogTimeWithPayload
   async openDB() {
-    const storeName = this.storeName;
-    this.db = await openDB<MyDB>(this.dbName, 1, {
+    this.db = await openDB<MyDB>(this.dbName, VERSION, {
       upgrade(db) {
-        if (!db.objectStoreNames.contains(storeName)) {
-          db.createObjectStore(storeName, { keyPath: "id" });
-        }
+        stores.forEach((storeName) => {
+          if (!db.objectStoreNames.contains(storeName)) {
+            db.createObjectStore(storeName, { keyPath: "id" });
+          }
+        });
       },
     });
   }
@@ -118,3 +124,4 @@ class IndexedDBService {
 }
 
 export const dbService = new IndexedDBService("db", "employees");
+export const dbMutationService = new IndexedDBService("db", "mutations");

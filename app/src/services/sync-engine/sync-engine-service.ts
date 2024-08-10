@@ -48,28 +48,30 @@ class SyncEngine {
       status.store.latestSyncedAt || new Date("1970").toISOString();
 
     for await (const result of apiService.get_employees_since_at(syncedAt)) {
-      this.save_records(result.data);
+      this.save_records(
+        result.data.map((i) => ({
+          ...i,
+          updated_at: i.updated_at
+            ? new Date(i.updated_at).toISOString()
+            : null,
+        }))
+      );
     }
   }
 
   @LogTimeWithPayload
   async listener_start() {
-    this.subscription = apiService
-      .get_subscription()
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-        },
-        (payload) => {
-          console.log("listener_start: ", payload);
-          this.save_records([payload.new as SyncRecord]);
-        }
-      )
-      .subscribe((status, err) => {
-        console.log(" ====> ", { status, err });
-      });
+    this.subscription = apiService.get_subscription().on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+      },
+      (payload) => {
+        console.log("listener_start: ", payload);
+        this.save_records([payload.new as SyncRecord]);
+      }
+    );
   }
 
   @LogTimeWithPayload

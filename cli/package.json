@@ -12,6 +12,10 @@
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
     "@supabase/supabase-js": "^2.45.0",
-    "dayjs": "^1.11.12"
+    "dayjs": "^1.11.12",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0"
   }
 }

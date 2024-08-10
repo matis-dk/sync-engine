@@ -45,7 +45,6 @@ class ApiService {
       const to = from + size;
       fetched = to + 1;
 
-      console.log(" ====> ", { from, to });
       const res = await supabase
         .from("employees")
         .select("*", { count: "exact" })

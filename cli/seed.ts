@@ -1,3 +1,4 @@
+import { v4 } from "uuid";
 import { createClient } from "@supabase/supabase-js";
 import { faker } from "@faker-js/faker";
 import dayjs from "dayjs";
@@ -21,6 +22,7 @@ const generateEmployees = (num: number) => {
       .split("T")[0];
 
     const employee = {
+      id: v4(),
       first_name: faker.person.firstName(),
       last_name: faker.person.lastName(),
       email: faker.internet.email(),

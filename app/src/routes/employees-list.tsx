@@ -58,7 +58,6 @@ function EmployeesTable() {
     const pos = order === "asc" ? 1 : -1;
     const neg = order === "asc" ? -1 : 1;
 
-    console.log("sortKey ====> ", sortKey);
     if (sortKey === "Name") {
       return data.sort((a, b) => (a.first_name > b.first_name ? pos : neg));
     }

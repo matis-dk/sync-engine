@@ -1,10 +1,7 @@
-import { useEffect, useRef } from "react";
-import { createFileRoute, useRouteContext } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "../services/store/store-service";
 import { syncEngineService } from "../services/sync-engine/sync-engine-service";
 import { dbService } from "../services/db/indexed-db-service";
-import useOnlineStatus from "../hooks/useOnlineStatus";
-import usePageVisibility from "../hooks/usePageVisibility";
 
 const btn =
   "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full";
@@ -15,11 +12,18 @@ export const Route = createFileRoute("/")({
 
 function HomeComponent() {
   const store = useStore();
-
   return (
     <div className="p-2 flex flex-col justify-start items-start gap-3">
       <h5>Zustand</h5>
       <p>employees: {Object.keys(store.employees).length}</p>
+      <button
+        className={btn}
+        onClick={() => {
+          console.log(store);
+        }}
+      >
+        store
+      </button>
       <button
         className={btn}
         onClick={() => {
@@ -46,6 +50,14 @@ function HomeComponent() {
         }}
       >
         clearEmployees
+      </button>
+      <button
+        className={btn}
+        onClick={() => {
+          console.log("store.mutations ====> ", store.mutations);
+        }}
+      >
+        mutations
       </button>
       <h5>IndexedDB</h5>
       <button

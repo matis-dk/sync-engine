@@ -23,6 +23,14 @@ function RootComponent() {
   const isBooted = useBoot();
   const isSyncing = useSync();
 
+  if (!isSyncing) {
+    return (
+      <div className="max-w-screen max-h-screen w-screen h-screen flex justify-center items-center">
+        <div>Loading</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="p-2 flex gap-2 text-lg">
