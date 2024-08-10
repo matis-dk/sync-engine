@@ -27,8 +27,11 @@ function EmployeesList() {
   const router = useRouter();
   return (
     <div className="flex flex-col justify-center items-center">
-      <div className="flex max-w-[1200px] w-full justify-end ">
-        <Button onClick={() => router.navigate({ to: "/employee-detail" })}>
+      <div className="flex max-w-[1200px] w-full justify-end border p-2 ">
+        <Button
+          variant="outline"
+          onClick={() => router.navigate({ to: "/employee-detail" })}
+        >
           Add employee
         </Button>
       </div>

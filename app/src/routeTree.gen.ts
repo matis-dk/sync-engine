@@ -12,7 +12,7 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as EmployeesListImport } from './routes/employees-list'
-import { Route as EmployeeDetailImport } from './routes/employee-detail'
+import { Route as EmployeesDetailImport } from './routes/employees-detail'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 
@@ -23,8 +23,8 @@ const EmployeesListRoute = EmployeesListImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const EmployeeDetailRoute = EmployeeDetailImport.update({
-  path: '/employee-detail',
+const EmployeesDetailRoute = EmployeesDetailImport.update({
+  path: '/employees-detail',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -56,11 +56,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
-    '/employee-detail': {
-      id: '/employee-detail'
-      path: '/employee-detail'
-      fullPath: '/employee-detail'
-      preLoaderRoute: typeof EmployeeDetailImport
+    '/employees-detail': {
+      id: '/employees-detail'
+      path: '/employees-detail'
+      fullPath: '/employees-detail'
+      preLoaderRoute: typeof EmployeesDetailImport
       parentRoute: typeof rootRoute
     }
     '/employees-list': {
@@ -78,7 +78,7 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   IndexRoute,
   AboutRoute,
-  EmployeeDetailRoute,
+  EmployeesDetailRoute,
   EmployeesListRoute,
 })
 
@@ -92,7 +92,7 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/",
         "/about",
-        "/employee-detail",
+        "/employees-detail",
         "/employees-list"
       ]
     },
@@ -102,8 +102,8 @@ export const routeTree = rootRoute.addChildren({
     "/about": {
       "filePath": "about.tsx"
     },
-    "/employee-detail": {
-      "filePath": "employee-detail.tsx"
+    "/employees-detail": {
+      "filePath": "employees-detail.tsx"
     },
     "/employees-list": {
       "filePath": "employees-list.tsx"

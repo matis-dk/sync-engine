@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 import { useSync } from "../hooks/useSync";
 import { useBoot } from "../hooks/useBoot";
+import { Loader2 } from "lucide-react";
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
@@ -23,13 +24,14 @@ function RootComponent() {
   const isBooted = useBoot();
   const isSyncing = useSync();
 
-  if (!isSyncing) {
-    return (
-      <div className="max-w-screen max-h-screen w-screen h-screen flex justify-center items-center">
-        <div>Loading</div>
-      </div>
-    );
-  }
+  // if (!isSyncing) {
+  //   return (
+  //     <div className="max-w-screen max-h-screen w-screen h-screen flex justify-center items-center">
+  //       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+  //       <div>Loading</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>

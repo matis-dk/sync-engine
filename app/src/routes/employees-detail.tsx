@@ -9,7 +9,7 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import { v4 } from "uuid";
-export const Route = createFileRoute("/employee-detail")({
+export const Route = createFileRoute("/employees-detail")({
   component: EmployeeDetail,
   validateSearch: (search: Record<string, unknown>): { id?: string } => {
     if (search.id && typeof search.id === "string") {
@@ -24,11 +24,12 @@ function EmployeeDetail({ props }: any) {
   const s = Route.useSearch();
   const { employees, addMutation } = useStore();
   const employee = s.id ? employees[s.id] || null : null;
-
+  console.log("employees ====> ", employees);
   return (
     <div className="p-2">
       <h2 className="mb-4">{!employee ? "Add employee" : "Update employee"}</h2>
       <UserForm
+        key={employee?.id}
         initialData={employee || defaultEmployee()}
         method={employee ? "update" : "create"}
         onSubmit={async (form) => {
