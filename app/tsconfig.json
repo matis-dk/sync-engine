@@ -1,5 +1,10 @@
 {
   "compilerOptions": {
+    "inlineSourceMap": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "strict": true,
@@ -9,6 +14,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "lib": ["WebWorker"]
   }
 }
