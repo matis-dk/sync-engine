@@ -1,5 +1,17 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Plus } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+  useRouter,
+  useSearch,
+} from "@tanstack/react-router";
+import { useDeferredValue, useMemo, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -16,91 +28,132 @@ import {
   PaginationLink,
   PaginationNext,
 } from "@/components/ui/pagination";
-import { useStore } from "@/services/store/store-service";
+import { EmployeesRecord, useStore } from "@/services/store/store-service";
 import { Button } from "@/components/ui/button";
+import { z } from "zod";
+import Fuse from "fuse.js";
+
+const sortOrder = z.union([z.literal("asc"), z.literal("desc")]);
+const sortKeys = z.union([
+  z.literal("Name"),
+  z.literal("Email"),
+  z.literal("Phone"),
+  z.literal("Updated"),
+  z.literal("Deleted"),
+]);
+
+const params = z.object({
+  sort: sortKeys.optional().default("Name").catch("Name"),
+  order: sortOrder.optional().default("asc").catch("asc"),
+  show_deleted: z.boolean().optional().default(false).catch(false),
+  q: z
+    .string()
+    .optional()
+    .refine((res) => res || "")
+    .catch(""),
+});
+
+type SortKeys = z.infer<typeof sortKeys>;
+type SortOrder = z.infer<typeof sortOrder>;
+type Params = z.infer<typeof params>;
 
 export const Route = createFileRoute("/employees-list")({
   component: EmployeesList,
+  validateSearch: params,
 });
 
 function EmployeesList() {
-  const router = useRouter();
   return (
     <div className="flex flex-col justify-center items-center">
-      <div className="flex max-w-[1200px] w-full justify-end border p-2 ">
-        <Button
-          variant="outline"
-          onClick={() => router.navigate({ to: "/employees-detail" })}
-        >
-          Add employee
-        </Button>
-      </div>
+      <Toolbar />
       <EmployeesTable />
     </div>
   );
 }
 
-type SortKeys = "Name" | "Email" | "Phone" | "Updated" | "Deleted";
-type SortOrder = "asc" | "desc";
-
+// transformation: raw data --> filteredData  --> sortedData --> slicedData
 function EmployeesTable() {
-  const router = useRouter();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const search = useSearch({ from: "/employees-list" });
+
   const employees = useStore().employees;
   const data = Object.values(employees);
-
-  const [sortKey, setSortKey] = useState<SortKeys>("Name");
-  const [order, setOrder] = useState<SortOrder>("asc");
-  const handleSort = (key: SortKeys) => {
-    if (sortKey === key) {
-      setOrder(order === "asc" ? "desc" : "asc");
-    }
-    setSortKey(key);
-  };
-
-  const sortedItems = useMemo(() => {
-    const pos = order === "asc" ? 1 : -1;
-    const neg = order === "asc" ? -1 : 1;
-
-    if (sortKey === "Name") {
-      return data.sort((a, b) => (a.first_name > b.first_name ? pos : neg));
-    }
-
-    if (sortKey === "Email") {
-      return data.sort((a, b) => (a.email > b.email ? pos : neg));
-    }
-
-    if (sortKey === "Phone") {
-      return data.sort((a, b) => (a.phone_number > b.phone_number ? pos : neg));
-    }
-
-    if (sortKey === "Updated") {
-      return data.sort((a, b) =>
-        new Date(a.updated_at).getTime() > new Date(b.updated_at).getTime()
-          ? pos
-          : neg
-      );
-    }
-
-    if (sortKey === "Deleted") {
-      return data.sort((a, b) =>
-        Boolean(a.deleted_at) > Boolean(b.deleted_at) ? pos : neg
-      );
-    }
-
-    return data;
-  }, [data, sortKey, order]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
-  const currentItems = sortedItems.slice(indexOfFirstItem, indexOfLastItem);
-
   const totalPages = Math.ceil(data.length / itemsPerPage);
+
+  const filteredData = useMemo(() => {
+    const filteredByDeleted = search.show_deleted
+      ? data
+      : data.filter((i) => Boolean(i.deleted_at));
+
+    const filteredBySearch =
+      !search.q || search.q.length < 2
+        ? filteredByDeleted
+        : new Fuse(filteredByDeleted, {
+            minMatchCharLength: 2,
+            threshold: 0.15,
+            shouldSort: true,
+            includeScore: true,
+            keys: ["first_name", "last_name", "email"],
+          })
+            .search(search.q)
+            .map((i) => i.item);
+
+    return filteredBySearch;
+  }, [data, search.q, search.show_deleted]);
+
+  const sortedData = useMemo(() => {
+    const list = filteredData;
+    const pos = search.order === "asc" ? 1 : -1;
+    const neg = search.order === "asc" ? -1 : 1;
+
+    if (search.sort === "Name") {
+      return list.sort((a, b) => (a.first_name > b.first_name ? pos : neg));
+    }
+
+    if (search.sort === "Email") {
+      return list.sort((a, b) => (a.email > b.email ? pos : neg));
+    }
+
+    if (search.sort === "Phone") {
+      return list.sort((a, b) => (a.phone_number > b.phone_number ? pos : neg));
+    }
+
+    if (search.sort === "Updated") {
+      return list.sort((a, b) =>
+        isoToTime(a.updated_at) > isoToTime(b.updated_at) ? pos : neg
+      );
+    }
+
+    if (search.sort === "Deleted") {
+      return list.sort((a, b) =>
+        Boolean(a.deleted_at) > Boolean(b.deleted_at) ? pos : neg
+      );
+    }
+
+    return list;
+  }, [filteredData, search.sort, search.order]);
+
+  const slicedData = sortedData.slice(indexOfFirstItem, indexOfLastItem);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleSort = (key: SortKeys) => {
+    navigate({
+      replace: true,
+      search: (prev) => ({
+        ...prev,
+        sort: key,
+        order: search.order === "asc" ? "desc" : "asc",
+      }),
+    });
   };
 
   return (
@@ -141,12 +194,12 @@ function EmployeesTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {currentItems.map((item) => (
+          {slicedData.map((item) => (
             <TableRow
               key={item.id}
               className="hover:bg-slate-100 cursor-pointer"
               onClick={() => {
-                router.navigate({
+                navigate({
                   to: "/employees-detail",
                   search: { id: item.id },
                 });
@@ -191,3 +244,59 @@ function EmployeesTable() {
     </div>
   );
 }
+
+function Toolbar() {
+  const navigate = useNavigate({ from: "/employees-list" });
+  const search = useSearch({ from: "/employees-list" });
+
+  const handleChange = (params: Partial<Params>) => {
+    navigate({
+      replace: true,
+      search: (prev) => ({
+        ...prev,
+        ...params,
+      }),
+    });
+  };
+
+  return (
+    <div className="flex max-w-[1200px] w-full border p-2 gap-4 ">
+      <Input
+        className=""
+        defaultValue={search.q}
+        placeholder="Search name or email"
+        onChange={(e) => handleChange({ q: e.target.value })}
+      />
+      <div className="flex gap-4">
+        <div className="flex gap-2 items-center cursor-pointer">
+          <Checkbox
+            id="checkbox-toggle-deleted"
+            defaultChecked={search.show_deleted}
+            onCheckedChange={(showDeleted) => {
+              handleChange({
+                show_deleted:
+                  typeof showDeleted === "string" ? false : showDeleted,
+              });
+            }}
+          />
+          <Label
+            htmlFor="checkbox-toggle-deleted"
+            className="whitespace-nowrap"
+          >
+            Show deleted
+          </Label>
+        </div>
+        <Button
+          className="gap-2"
+          variant="outline"
+          onClick={() => navigate({ to: "/employees-detail" })}
+        >
+          <Plus className="h-4 w-4" />
+          Add employee
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+const isoToTime = (date: string) => new Date(date).getTime();
