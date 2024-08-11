@@ -61,10 +61,10 @@ export const Route = createFileRoute("/employees/")({
 
 function EmployeesList() {
   return (
-    <div className="flex flex-col justify-center items-center">
+    <>
       <Toolbar />
       <EmployeesTable />
-    </div>
+    </>
   );
 }
 
@@ -154,7 +154,7 @@ function EmployeesTable() {
   };
 
   return (
-    <div className="flex flex-col gap-4 w-[1200px] border pb-4">
+    <div className="flex flex-col gap-4 w-full  pb-4">
       <Table>
         <TableHeader>
           <TableRow>
@@ -259,7 +259,7 @@ function Toolbar() {
   };
 
   return (
-    <div className="flex max-w-[1200px] w-full border p-2 gap-4 ">
+    <div className="flex w-full border-b p-2 gap-4">
       <Input
         className=""
         defaultValue={search.q}
