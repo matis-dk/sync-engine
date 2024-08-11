@@ -157,6 +157,7 @@ function EmployeesTable() {
         ...prev,
         sort: key,
         order: search.order === "asc" ? "desc" : "asc",
+        page: 1,
       }),
     });
   };
@@ -264,6 +265,7 @@ function Toolbar() {
       search: (prev) => ({
         ...prev,
         ...params,
+        page: 1,
       }),
     });
   };

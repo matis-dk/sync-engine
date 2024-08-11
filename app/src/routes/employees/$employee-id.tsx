@@ -6,7 +6,7 @@ import {
   Mutation,
   useStore,
 } from "@/services/store/store-service";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import { v4 } from "uuid";
 
@@ -17,8 +17,28 @@ export const Route = createFileRoute("/employees/$employee-id")({
 function EmployeeDetail({ props }: any) {
   const { employees, addMutation } = useStore();
   const params = Route.useParams();
+  const router = useRouter();
   const employee =
     params["employee-id"] === "new" ? null : employees[params["employee-id"]];
+
+  const handleSubmit = async (form: EmployeeRecordPartial) => {
+    const partialEmployee = {
+      ...diff(employee, form),
+      id: employee?.id || form.id,
+    };
+
+    const mutation: Mutation = {
+      id: v4(),
+      created_at: new Date().toISOString(),
+      table: "employees",
+      payload: partialEmployee,
+    };
+
+    await dbMutationService.upsertRecord(mutation);
+    addMutation(mutation);
+
+    router.history.back();
+  };
 
   return (
     <div className="p-2">
@@ -27,22 +47,7 @@ function EmployeeDetail({ props }: any) {
         key={employee?.id}
         initialData={employee || defaultEmployee()}
         method={employee ? "update" : "create"}
-        onSubmit={async (form) => {
-          const partialEmployee = {
-            ...diff(employee, form),
-            id: employee?.id || form.id,
-          };
-
-          const mutation: Mutation = {
-            id: v4(),
-            created_at: new Date().toISOString(),
-            table: "employees",
-            payload: partialEmployee,
-          };
-
-          await dbMutationService.upsertRecord(mutation);
-          addMutation(mutation);
-        }}
+        onSubmit={handleSubmit}
       />
     </div>
   );

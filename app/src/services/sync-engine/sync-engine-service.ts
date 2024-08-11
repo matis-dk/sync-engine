@@ -42,6 +42,8 @@ class SyncEngine {
 
   @LogTimeWithPayload
   async sync_remote_to_client() {
+    this.logger.info("sync_remote_to_client");
+
     const status = await this.sync_status();
 
     if (status.api.count === 0) {
@@ -71,7 +73,7 @@ class SyncEngine {
 
   @LogTimeWithPayload
   async sync_client_to_remote() {
-    this.logger.info("sync_client_to_remote: syncing mutations");
+    this.logger.info("sync_client_to_remote");
 
     const mutations = await dbMutationService
       .getAllRecords()
@@ -81,6 +83,11 @@ class SyncEngine {
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         )
       );
+
+    if (mutations.length === 0) {
+      this.logger.info("sync_client_to_remote: 0 mutations to sync");
+      return;
+    }
 
     for await (const mutation of mutations) {
       const result = await apiService.upsert_employee({
@@ -103,12 +110,6 @@ class SyncEngine {
 
   @LogTimeWithPayload
   async listener_start() {
-    if (this.subscription) {
-      this.logger.info("reusing subscription");
-      this.subscription.subscribe();
-      return;
-    }
-
     const channel = apiService.get_subscription_channel((payload) => {
       this.logger.info("listener_start: ", payload);
       this.save_records([payload.new as SyncRecord]);

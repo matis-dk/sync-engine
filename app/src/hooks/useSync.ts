@@ -51,7 +51,7 @@ export function useSync() {
 
   async function handleSyncStart() {
     await syncEngineService.sync_remote_to_client();
-
+    await syncEngineService.sync_client_to_remote();
     syncEngineService.listener_start();
     setSynced(true);
   }
