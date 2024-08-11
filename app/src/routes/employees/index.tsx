@@ -43,6 +43,7 @@ export const params = z.object({
   sort: sortKeys.optional().default("Name").catch("Name"),
   order: sortOrder.optional().default("asc").catch("asc"),
   show_deleted: z.boolean().optional().default(false).catch(false),
+  page: z.number().nonnegative().min(1).optional().default(1).catch(1),
   q: z
     .string()
     .optional()
@@ -51,7 +52,6 @@ export const params = z.object({
 });
 
 type SortKeys = z.infer<typeof sortKeys>;
-type SortOrder = z.infer<typeof sortOrder>;
 type Params = z.infer<typeof params>;
 
 export const Route = createFileRoute("/employees/")({
@@ -76,11 +76,12 @@ function EmployeesTable() {
   const employees = useStore().employees;
   const data = Object.values(employees);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const currentPage = search.page;
+  const itemsPerPage = 10;
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
   const totalPages = Math.ceil(data.length / itemsPerPage);
 
   const filteredData = useMemo(() => {
@@ -139,7 +140,14 @@ function EmployeesTable() {
   const slicedData = sortedData.slice(indexOfFirstItem, indexOfLastItem);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    if (page < 1 || page > totalPages) return;
+    navigate({
+      replace: true,
+      search: (prev) => ({
+        ...prev,
+        page,
+      }),
+    });
   };
 
   const handleSort = (key: SortKeys) => {
@@ -221,6 +229,7 @@ function EmployeesTable() {
             <PaginationPrevious
               href="#"
               onClick={() => handlePageChange(currentPage - 1)}
+              className={`${currentPage - 1 < 1 ? "opacity-40" : ""}`}
             />
           </PaginationItem>
           <PaginationItem>
@@ -236,6 +245,7 @@ function EmployeesTable() {
             <PaginationNext
               href="#"
               onClick={() => handlePageChange(currentPage + 1)}
+              className={`${currentPage + 1 > totalPages ? "opacity-40" : ""}`}
             />
           </PaginationItem>
         </PaginationContent>
