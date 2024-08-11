@@ -43,7 +43,7 @@ const settings = {
 export const log = {
   common: new Logger<unknown>(settings),
   service: new Logger<unknown>({ name: "[SERVICE]", ...settings }),
-  mutation: new Logger<unknown>({ name: "[DB]", ...settings }),
+  mutation: new Logger<unknown>({ name: "[MUTATION]", ...settings }),
   useBoot: new Logger<unknown>({ name: "[useBoot]", ...settings }),
   useSync: new Logger<unknown>({ name: "[useSync]", ...settings }),
 };

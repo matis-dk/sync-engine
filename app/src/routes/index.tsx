@@ -2,9 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "../services/store/store-service";
 import { syncEngineService } from "../services/sync-engine/sync-engine-service";
 import { dbService } from "../services/db/indexed-db-service";
-
-const btn =
-  "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full";
+import { Button } from "@/components/ui/button";
+import { apiService, supabase } from "@/services/api/api-service";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
@@ -13,124 +12,150 @@ export const Route = createFileRoute("/")({
 function HomeComponent() {
   const store = useStore();
   return (
-    <div className="p-2 flex flex-col justify-start items-start gap-3">
-      <h5>Zustand</h5>
-      <p>employees: {Object.keys(store.employees).length}</p>
-      <button
-        className={btn}
-        onClick={() => {
-          console.log(store);
-        }}
-      >
-        store
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          console.log(
-            "Object.keys(store.employees).length() ====> ",
-            Object.keys(store.employees).length
-          );
-        }}
-      >
-        employees length
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          store.setEmployees([createRecord("1"), createRecord("2")]);
-        }}
-      >
-        setEmployees
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          store.clearEmployees();
-        }}
-      >
-        clearEmployees
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          console.log("store.mutations ====> ", store.mutations);
-        }}
-      >
-        mutations
-      </button>
-      <h5>IndexedDB</h5>
-      <button
-        className={btn}
-        onClick={() => {
-          printPromise(dbService.getAllRecords());
-        }}
-      >
-        getAllRecords
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          printPromise(dbService.clearAllRecords());
-        }}
-      >
-        clearAllRecords
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          dbService.addRecord(createRecord(`id-${Date.now()}`));
-        }}
-      >
-        addRecord
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          dbService.bulkUpsertRecords([
-            createRecord("id-1"),
-            createRecord("id-2"),
-          ]);
-        }}
-      >
-        bulkUpsertRecords
-      </button>
-      <hr />
-      <h5>SyncEngine</h5>
-      <button
-        className={btn}
-        onClick={() => {
-          printPromise(syncEngineService.sync_status());
-        }}
-      >
-        sync_status
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          printPromise(syncEngineService.sync_to_now());
-        }}
-      >
-        sync_to_now
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          syncEngineService.listener_start();
-        }}
-      >
-        listener_start
-      </button>
-      <button
-        className={btn}
-        onClick={() => {
-          syncEngineService.listener_stop();
-        }}
-      >
-        listener_stop
-      </button>
+    <div className="p-4 flex gap-8">
+      <Card>
+        <h5>Zustand</h5>
+        <Button
+          variant="outline"
+          onClick={() => {
+            console.log(store);
+          }}
+        >
+          store
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            console.log(
+              "Object.keys(store.employees).length() ====> ",
+              Object.keys(store.employees).length
+            );
+          }}
+        >
+          employees length
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            store.setEmployees([createRecord("1"), createRecord("2")]);
+          }}
+        >
+          setEmployees
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            store.clearEmployees();
+          }}
+        >
+          clearEmployees
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            console.log("store.mutations ====> ", store.mutations);
+          }}
+        >
+          mutations
+        </Button>
+      </Card>
+      <Card>
+        <h5>IndexedDB</h5>
+        <Button
+          variant="outline"
+          onClick={() => {
+            dbService.getAllRecords();
+          }}
+        >
+          getAllRecords
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            dbService.clearAllRecords();
+          }}
+        >
+          clearAllRecords
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            dbService.addRecord(createRecord(`id-${Date.now()}`));
+          }}
+        >
+          addRecord
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            dbService.bulkUpsertRecords([
+              createRecord("id-1"),
+              createRecord("id-2"),
+            ]);
+          }}
+        >
+          bulkUpsertRecords
+        </Button>
+      </Card>
+
+      <Card>
+        <h5>SyncEngine</h5>
+        <Button
+          variant="outline"
+          onClick={() => {
+            syncEngineService.sync_status();
+          }}
+        >
+          sync_status
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            syncEngineService.sync_remote_to_client();
+          }}
+        >
+          sync_remote_to_client
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            syncEngineService.sync_client_to_remote();
+          }}
+        >
+          sync_client_to_remote
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            syncEngineService.listener_stop();
+          }}
+        >
+          listener_stop
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            apiService.upsert_employee({
+              id: "e7b65897-bce8-4933-9e5b-9660ddfce1f7",
+              first_name: "Maaatis",
+              last_name: "m",
+              email: "m@opacity.dk",
+              phone_number: "1234",
+              hire_date: new Date().toISOString(),
+              updated_at: "2024-08-10T18:19:17.047Z",
+              deleted_at: null,
+            });
+          }}
+        >
+          apiService upsert
+        </Button>
+      </Card>
     </div>
   );
+}
+
+function Card({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-col gap-2">{children}</div>;
 }
 
 const createRecord = (id?: string) => ({
@@ -139,13 +164,3 @@ const createRecord = (id?: string) => ({
   deleted_at: null,
   updated_at: null,
 });
-
-const printPromise = <T,>(p: Promise<T>) => {
-  return p
-    .then((res) => {
-      console.log("res ====> ", res);
-    })
-    .catch((err) => {
-      console.log("err ====> ", err);
-    });
-};

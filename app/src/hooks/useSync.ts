@@ -17,14 +17,14 @@ export function useSync() {
 
   useEffect(() => {
     if (!isBooted) {
-      log.useSync.info("application is booted yet");
+      log.useSync.info("application isn't booted yet");
+      handleSyncStop();
       return;
     }
 
     if (!isOnline) {
       log.useSync.info("user isn't online");
-      syncEngineService.listener_stop();
-      setSynced(false);
+      handleSyncStop();
       return;
     }
 
@@ -35,11 +35,22 @@ export function useSync() {
       return;
     }
 
-    handleSync();
+    log.useSync.info("handleSyncStart");
+    handleSyncStart();
+
+    return () => {
+      log.useSync.info("handleSyncStop");
+      handleSyncStop();
+    };
   }, [isBooted, isOnline, isPageVisibile]);
 
-  async function handleSync() {
-    const result = await syncEngineService.sync_to_now();
+  function handleSyncStop() {
+    syncEngineService.listener_stop();
+    setSynced(false);
+  }
+
+  async function handleSyncStart() {
+    await syncEngineService.sync_remote_to_client();
 
     syncEngineService.listener_start();
     setSynced(true);

@@ -54,12 +54,13 @@ type Props = {
   method: "update" | "create";
 };
 
-const defaultEmployee = () => ({
+export const defaultEmployee = () => ({
   id: v4(),
   first_name: "",
   last_name: "",
   email: "",
   phone_number: "",
+  hire_date: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   created_at: new Date().toISOString(),
   deleted_at: null,

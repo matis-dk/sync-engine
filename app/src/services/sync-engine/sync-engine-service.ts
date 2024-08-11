@@ -1,8 +1,16 @@
 import { log, LogTimeWithPayload } from "../log/log-service";
-import { dbService, SyncRecord } from "../db/indexed-db-service";
-import { useStore } from "../store/store-service";
-import { RealtimeChannel } from "@supabase/supabase-js";
-import { apiService } from "../api/api-service";
+import {
+  dbMutationService,
+  dbService,
+  SyncRecord,
+} from "../db/indexed-db-service";
+import { Mutation, useStore } from "../store/store-service";
+import {
+  REALTIME_CHANNEL_STATES,
+  RealtimeChannel,
+} from "@supabase/supabase-js";
+import { apiService, supabase } from "../api/api-service";
+import { defaultEmployee } from "@/routes/employees/$employee-id";
 
 export type Status = {
   count: 0;
@@ -33,16 +41,16 @@ class SyncEngine {
   }
 
   @LogTimeWithPayload
-  async sync_to_now() {
+  async sync_remote_to_client() {
     const status = await this.sync_status();
 
     if (status.api.count === 0) {
-      this.logger.info("sync_to_now: api doesn't have any records");
+      this.logger.info("sync_remote_to_client: api doesn't have any records");
       return;
     }
 
     if (status.api.latestSyncedAt === status.store.latestSyncedAt) {
-      this.logger.info("sync_to_now: sync is up-to-date");
+      this.logger.info("sync_remote_to_client: sync is up-to-date");
       return;
     }
 
@@ -62,24 +70,60 @@ class SyncEngine {
   }
 
   @LogTimeWithPayload
-  async listener_start() {
-    this.subscription = apiService.get_subscription().on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-      },
-      (payload) => {
-        this.logger.info("listener_start: ", payload);
-        this.save_records([payload.new as SyncRecord]);
+  async sync_client_to_remote() {
+    this.logger.info("sync_client_to_remote: syncing mutations");
+
+    const mutations = await dbMutationService
+      .getAllRecords()
+      .then((res) =>
+        (res as Array<Mutation>).sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )
+      );
+
+    for await (const mutation of mutations) {
+      const result = await apiService.upsert_employee({
+        ...defaultEmployee(),
+        ...mutation.payload,
+      });
+
+      if (result.error) {
+        this.logger.info("sync_client_to_remote: failed to upsert mutation");
+      } else {
+        this.logger.info(
+          `sync_client_to_remote: successfully upserted mutation: ${mutation.id}`
+        );
       }
-    );
+
+      await dbMutationService.deleteRecord(mutation.id);
+      this.store.deleteMutation(mutation.id);
+    }
+  }
+
+  @LogTimeWithPayload
+  async listener_start() {
+    if (this.subscription) {
+      this.logger.info("reusing subscription");
+      this.subscription.subscribe();
+      return;
+    }
+
+    const channel = apiService.get_subscription_channel((payload) => {
+      this.logger.info("listener_start: ", payload);
+      this.save_records([payload.new as SyncRecord]);
+    });
+
+    if (channel.state === REALTIME_CHANNEL_STATES.joined) {
+      this.logger.warn("channel state isn't joined: ", channel.state);
+    }
+
+    this.subscription = channel.subscribe();
   }
 
   @LogTimeWithPayload
   listener_stop() {
     this.subscription?.unsubscribe();
-    this.subscription = null;
   }
 
   @LogTimeWithPayload

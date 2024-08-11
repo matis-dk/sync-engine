@@ -13,6 +13,7 @@ export type EmployeesRecord = SyncRecord & {
   last_name: string;
   email: string;
   phone_number: string;
+  hire_date: string;
   updated_at: string;
   deleted_at: string | null;
 };
@@ -32,6 +33,7 @@ type Store = {
   mutations: Array<Mutation>;
   addMutation: (record: Mutation) => void;
   setMutations: (records: Array<Mutation>) => void;
+  deleteMutation: (mutationId: string) => void;
 };
 
 type ComputedStore = {
@@ -93,6 +95,10 @@ export const useStore = create<Store>()(
         addMutation: (record: Mutation) =>
           set((state) => ({ mutations: [...state.mutations, record] })),
         setMutations: (records) => set((state) => ({ mutations: records })),
+        deleteMutation: (mutationId) =>
+          set((state) => ({
+            mutations: state.mutations.filter((i) => i.id !== mutationId),
+          })),
       };
     }, computeState)
   )
@@ -106,24 +112,24 @@ function applyMutations(employees: EmployeesMap, mutations: Array<Mutation>) {
   mutations
     .sort(
       (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
     )
     .forEach((mutation) => {
       const mutationId = mutation.payload.id;
 
       if (!mutationId) {
-        log.mutation.info(`missing payload id: ${mutation.id}`);
+        log.mutation.info(`payload id: ${mutation.id}`);
         return;
       }
 
       if (employees[mutationId]) {
-        log.mutation.info(`missing  updating employee: ${mutationId}`);
+        log.mutation.info(`updating employee: ${mutationId}`);
         employees[mutationId] = {
           ...employees[mutationId],
           ...mutation.payload,
         };
       } else {
-        log.mutation.info(`missing  adding employee: ${mutationId}`);
+        log.mutation.info(`adding employee: ${mutationId}`);
         employees[mutationId] = mutation.payload as any;
       }
     });

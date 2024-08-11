@@ -1,10 +1,15 @@
 import { log, LogTimeWithPayload } from "../log/log-service";
-import { createClient } from "@supabase/supabase-js";
+import {
+  createClient,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js";
+import { EmployeeRecordPartial, EmployeesRecord } from "../store/store-service";
+import { default as dayjs } from "dayjs";
 
 const supabaseUrl = "https://bacqiesjoqdkxvluwdel.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJhY3FpZXNqb3Fka3h2bHV3ZGVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MjI0Njc1MzcsImV4cCI6MjAzODA0MzUzN30.Ysb8cmpJKKnQv_W6g4MvYUaLxrUvGCZTqmBwsBzjoLw";
-const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 type IsoString = string;
 
@@ -24,6 +29,11 @@ class ApiService {
       .limit(1);
   }
 
+  @LogTimeWithPayload
+  async upsert_employee(record: EmployeesRecord) {
+    return supabase.from("employees").upsert(record);
+  }
+
   async *get_employees_since_at(sinceAt: IsoString) {
     let fetched = 0;
 
@@ -36,7 +46,7 @@ class ApiService {
       const res = await supabase
         .from("employees")
         .select("*", { count: "exact" })
-        .gt("updated_at", sinceAt)
+        .gt("updated_at", dayjs(sinceAt).add(1, "millisecond").toISOString())
         .order("updated_at", { ascending: true })
         .order("id", { ascending: true })
         .range(from, to);
@@ -59,8 +69,21 @@ class ApiService {
     }
   }
 
-  get_subscription() {
-    return supabase.channel("schema-db-changes");
+  get_subscription_channel(
+    fn: (
+      payload: RealtimePostgresChangesPayload<{
+        [key: string]: any;
+      }>
+    ) => void
+  ) {
+    return supabase.channel("db-channel-2").on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+      },
+      fn
+    );
   }
 }
 
