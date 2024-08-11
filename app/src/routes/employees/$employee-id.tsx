@@ -9,22 +9,17 @@ import {
 import { createFileRoute } from "@tanstack/react-router";
 import React, { useState, useEffect } from "react";
 import { v4 } from "uuid";
-export const Route = createFileRoute("/employees-detail")({
+
+export const Route = createFileRoute("/employees/$employee-id")({
   component: EmployeeDetail,
-  validateSearch: (search: Record<string, unknown>): { id?: string } => {
-    if (search.id && typeof search.id === "string") {
-      return { id: search.id };
-    } else {
-      return {};
-    }
-  },
 });
 
 function EmployeeDetail({ props }: any) {
-  const s = Route.useSearch();
   const { employees, addMutation } = useStore();
-  const employee = s.id ? employees[s.id] || null : null;
-  console.log("employees ====> ", employees);
+  const params = Route.useParams();
+  const employee =
+    params["employee-id"] === "new" ? null : employees[params["employee-id"]];
+
   return (
     <div className="p-2">
       <h2 className="mb-4">{!employee ? "Add employee" : "Update employee"}</h2>

@@ -1,17 +1,14 @@
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import {
   createFileRoute,
-  Link,
   useNavigate,
-  useRouter,
   useSearch,
 } from "@tanstack/react-router";
-import { useDeferredValue, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -28,7 +25,7 @@ import {
   PaginationLink,
   PaginationNext,
 } from "@/components/ui/pagination";
-import { EmployeesRecord, useStore } from "@/services/store/store-service";
+import { useStore } from "@/services/store/store-service";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import Fuse from "fuse.js";
@@ -42,7 +39,7 @@ const sortKeys = z.union([
   z.literal("Deleted"),
 ]);
 
-const params = z.object({
+export const params = z.object({
   sort: sortKeys.optional().default("Name").catch("Name"),
   order: sortOrder.optional().default("asc").catch("asc"),
   show_deleted: z.boolean().optional().default(false).catch(false),
@@ -57,7 +54,7 @@ type SortKeys = z.infer<typeof sortKeys>;
 type SortOrder = z.infer<typeof sortOrder>;
 type Params = z.infer<typeof params>;
 
-export const Route = createFileRoute("/employees-list")({
+export const Route = createFileRoute("/employees/")({
   component: EmployeesList,
   validateSearch: params,
 });
@@ -74,7 +71,7 @@ function EmployeesList() {
 // transformation: raw data --> filteredData  --> sortedData --> slicedData
 function EmployeesTable() {
   const navigate = useNavigate({ from: Route.fullPath });
-  const search = useSearch({ from: "/employees-list" });
+  const search = useSearch({ from: "/employees/" });
 
   const employees = useStore().employees;
   const data = Object.values(employees);
@@ -89,7 +86,7 @@ function EmployeesTable() {
   const filteredData = useMemo(() => {
     const filteredByDeleted = search.show_deleted
       ? data
-      : data.filter((i) => Boolean(i.deleted_at));
+      : data.filter((i) => !Boolean(i.deleted_at));
 
     const filteredBySearch =
       !search.q || search.q.length < 2
@@ -200,8 +197,10 @@ function EmployeesTable() {
               className="hover:bg-slate-100 cursor-pointer"
               onClick={() => {
                 navigate({
-                  to: "/employees-detail",
-                  search: { id: item.id },
+                  to: "/employees/$employee-id",
+                  params: {
+                    "employee-id": item.id,
+                  },
                 });
               }}
             >
@@ -246,8 +245,8 @@ function EmployeesTable() {
 }
 
 function Toolbar() {
-  const navigate = useNavigate({ from: "/employees-list" });
-  const search = useSearch({ from: "/employees-list" });
+  const navigate = useNavigate({ from: "/employees" });
+  const search = useSearch({ from: "/employees/" });
 
   const handleChange = (params: Partial<Params>) => {
     navigate({
@@ -289,7 +288,12 @@ function Toolbar() {
         <Button
           className="gap-2"
           variant="outline"
-          onClick={() => navigate({ to: "/employees-detail" })}
+          onClick={() =>
+            navigate({
+              to: "/employees/$employee-id",
+              params: { "employee-id": "new" },
+            })
+          }
         >
           <Plus className="h-4 w-4" />
           Add employee

@@ -11,22 +11,12 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as EmployeesListImport } from './routes/employees-list'
-import { Route as EmployeesDetailImport } from './routes/employees-detail'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as EmployeesIndexImport } from './routes/employees/index'
+import { Route as EmployeesEmployeeIdImport } from './routes/employees/$employee-id'
 
 // Create/Update Routes
-
-const EmployeesListRoute = EmployeesListImport.update({
-  path: '/employees-list',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const EmployeesDetailRoute = EmployeesDetailImport.update({
-  path: '/employees-detail',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const AboutRoute = AboutImport.update({
   path: '/about',
@@ -35,6 +25,16 @@ const AboutRoute = AboutImport.update({
 
 const IndexRoute = IndexImport.update({
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EmployeesIndexRoute = EmployeesIndexImport.update({
+  path: '/employees/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const EmployeesEmployeeIdRoute = EmployeesEmployeeIdImport.update({
+  path: '/employees/$employee-id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -56,18 +56,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutImport
       parentRoute: typeof rootRoute
     }
-    '/employees-detail': {
-      id: '/employees-detail'
-      path: '/employees-detail'
-      fullPath: '/employees-detail'
-      preLoaderRoute: typeof EmployeesDetailImport
+    '/employees/$employee-id': {
+      id: '/employees/$employee-id'
+      path: '/employees/$employee-id'
+      fullPath: '/employees/$employee-id'
+      preLoaderRoute: typeof EmployeesEmployeeIdImport
       parentRoute: typeof rootRoute
     }
-    '/employees-list': {
-      id: '/employees-list'
-      path: '/employees-list'
-      fullPath: '/employees-list'
-      preLoaderRoute: typeof EmployeesListImport
+    '/employees/': {
+      id: '/employees/'
+      path: '/employees'
+      fullPath: '/employees'
+      preLoaderRoute: typeof EmployeesIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -78,8 +78,8 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   IndexRoute,
   AboutRoute,
-  EmployeesDetailRoute,
-  EmployeesListRoute,
+  EmployeesEmployeeIdRoute,
+  EmployeesIndexRoute,
 })
 
 /* prettier-ignore-end */
@@ -92,8 +92,8 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/",
         "/about",
-        "/employees-detail",
-        "/employees-list"
+        "/employees/$employee-id",
+        "/employees/"
       ]
     },
     "/": {
@@ -102,11 +102,11 @@ export const routeTree = rootRoute.addChildren({
     "/about": {
       "filePath": "about.tsx"
     },
-    "/employees-detail": {
-      "filePath": "employees-detail.tsx"
+    "/employees/$employee-id": {
+      "filePath": "employees/$employee-id.tsx"
     },
-    "/employees-list": {
-      "filePath": "employees-list.tsx"
+    "/employees/": {
+      "filePath": "employees/index.tsx"
     }
   }
 }

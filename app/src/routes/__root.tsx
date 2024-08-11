@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 import { useSync } from "../hooks/useSync";
 import { useBoot } from "../hooks/useBoot";
-import { Loader2 } from "lucide-react";
+import { params } from "./employees";
 
 const TanStackRouterDevtools =
   process.env.NODE_ENV === "production"
@@ -46,7 +46,8 @@ function RootComponent() {
           Home
         </Link>{" "}
         <Link
-          to={"/employees-list"}
+          to={"/employees"}
+          search={params.safeParse({}).data!}
           activeProps={{
             className: "font-bold",
           }}
