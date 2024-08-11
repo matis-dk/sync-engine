@@ -44,6 +44,7 @@ type ComputedStore = {
 export type Mutation = {
   id: string;
   created_at: IsoString;
+  type: "update" | "create";
   table: "employees";
   payload: EmployeeRecordPartial;
 };

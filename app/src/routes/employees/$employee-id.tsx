@@ -14,7 +14,7 @@ export const Route = createFileRoute("/employees/$employee-id")({
   component: EmployeeDetail,
 });
 
-function EmployeeDetail({ props }: any) {
+function EmployeeDetail() {
   const { employees, addMutation } = useStore();
   const params = Route.useParams();
   const router = useRouter();
@@ -31,6 +31,7 @@ function EmployeeDetail({ props }: any) {
       id: v4(),
       created_at: new Date().toISOString(),
       table: "employees",
+      type: params["employee-id"] === "new" ? "create" : "update",
       payload: partialEmployee,
     };
 

@@ -30,8 +30,13 @@ class ApiService {
   }
 
   @LogTimeWithPayload
+  async update_employee(record: EmployeeRecordPartial) {
+    return supabase.from("employees").update(record).eq("id", record.id);
+  }
+
+  @LogTimeWithPayload
   async upsert_employee(record: EmployeesRecord) {
-    return supabase.from("employees").upsert(record);
+    return supabase.from("employees").upsert(record, { onConflict: "id" });
   }
 
   async *get_employees_since_at(sinceAt: IsoString) {
@@ -46,7 +51,7 @@ class ApiService {
       const res = await supabase
         .from("employees")
         .select("*", { count: "exact" })
-        .gt("updated_at", dayjs(sinceAt).add(1, "millisecond").toISOString())
+        .gt("updated_at", sinceAt)
         .order("updated_at", { ascending: true })
         .order("id", { ascending: true })
         .range(from, to);

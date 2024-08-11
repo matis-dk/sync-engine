@@ -90,16 +90,21 @@ class SyncEngine {
     }
 
     for await (const mutation of mutations) {
-      const result = await apiService.upsert_employee({
-        ...defaultEmployee(),
-        ...mutation.payload,
-      });
+      const result =
+        mutation.type === "create"
+          ? await apiService.upsert_employee({
+              ...defaultEmployee(),
+              ...mutation.payload,
+            })
+          : await apiService.update_employee(mutation.payload);
 
       if (result.error) {
-        this.logger.info("sync_client_to_remote: failed to upsert mutation");
+        this.logger.info(
+          `sync_client_to_remote: failed to ${mutation.type} mutation`
+        );
       } else {
         this.logger.info(
-          `sync_client_to_remote: successfully upserted mutation: ${mutation.id}`
+          `sync_client_to_remote: successfully ${mutation.type} mutation: ${mutation.id}`
         );
       }
 

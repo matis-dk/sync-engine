@@ -1,7 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useStore } from "../services/store/store-service";
 import { syncEngineService } from "../services/sync-engine/sync-engine-service";
-import { dbService } from "../services/db/indexed-db-service";
+import {
+  dbMutationService,
+  dbService,
+} from "../services/db/indexed-db-service";
 import { Button } from "@/components/ui/button";
 import { apiService, supabase } from "@/services/api/api-service";
 
@@ -13,6 +16,20 @@ function HomeComponent() {
   const store = useStore();
   return (
     <div className="p-4 flex gap-8">
+      <Card>
+        <h5>Global</h5>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            syncEngineService.listener_stop();
+            await dbService.clearAllRecords();
+            await dbMutationService.clearAllRecords();
+          }}
+        >
+          reset
+        </Button>
+      </Card>
+
       <Card>
         <h5>Zustand</h5>
         <Button
@@ -132,6 +149,21 @@ function HomeComponent() {
         >
           listener_stop
         </Button>
+      </Card>
+      <Card>
+        <h5>API service</h5>
+        <Button
+          variant="outline"
+          onClick={() => {
+            apiService.update_employee({
+              id: "41d78fb4-edd3-4ae2-86e1-44cf61939835",
+              first_name: "M",
+              updated_at: new Date().toISOString(),
+            });
+          }}
+        >
+          update_employee
+        </Button>
         <Button
           variant="outline"
           onClick={() => {
@@ -147,7 +179,7 @@ function HomeComponent() {
             });
           }}
         >
-          apiService upsert
+          upsert_employee
         </Button>
       </Card>
     </div>
